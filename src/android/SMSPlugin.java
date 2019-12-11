@@ -48,7 +48,7 @@ extends CordovaPlugin {
     private static final String SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
     public static final String SMS_EXTRA_NAME = "pdus";
     
-    public statuc final String SMS_URI_CONVERSATION = "content://sms/conversations/"
+    public statuc final String SMS_URI_CONVERSATION = "content://sms/conversations/";
     public static final String SMS_URI_ALL = "content://sms/";
     public static final String SMS_URI_INBOX = "content://sms/inbox";
     public static final String SMS_URI_SEND = "content://sms/sent";
