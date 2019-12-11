@@ -48,7 +48,8 @@ extends CordovaPlugin {
     private static final String SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
     public static final String SMS_EXTRA_NAME = "pdus";
     
-    public static final String SMS_URI_ALL = "content://sms/conversations/";
+    public statuc final String SMS_URI_CONVERSATION = "content://sms/conversations/"
+    public static final String SMS_URI_ALL = "content://sms/";
     public static final String SMS_URI_INBOX = "content://sms/inbox";
     public static final String SMS_URI_SEND = "content://sms/sent";
     public static final String SMS_URI_DRAFT = "content://sms/draft";
@@ -423,8 +424,8 @@ extends CordovaPlugin {
         Activity ctx = this.cordova.getActivity();
         int n = 0;
         try {
-            Uri uri = Uri.parse((SMS_URI_ALL + uri_filter));
-            Cursor cur = ctx.getContentResolver().query(uri, (String[])null, "", (String[])null, null);
+            Uri uri = Uri.parse((SMS_URI_CONVERSATION + uri_filter));
+            Cursor cur = ctx.getContentResolver().delete(uri, (String[])null, "", (String[])null, null);
             // while (cur.moveToNext()) {
             //     int id = cur.getInt(cur.getColumnIndex("_id"));
             //     boolean matchId = fid > -1 && fid == id;
