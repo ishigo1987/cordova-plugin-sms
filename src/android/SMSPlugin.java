@@ -48,7 +48,7 @@ extends CordovaPlugin {
     private static final String SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
     public static final String SMS_EXTRA_NAME = "pdus";
     
-    public static final String SMS_URI_ALL = "content://sms/";
+    public static final String SMS_URI_ALL = "content://sms/conversations/";
     public static final String SMS_URI_INBOX = "content://sms/inbox";
     public static final String SMS_URI_SEND = "content://sms/sent";
     public static final String SMS_URI_DRAFT = "content://sms/draft";
@@ -69,6 +69,7 @@ extends CordovaPlugin {
     public static final String REPLY_PATH_PRESENT = "reply_path_present";
     public static final String TYPE = "type";
     public static final String PROTOCOL = "protocol";
+    public static final String THREAD_ID = "thread_id";
     
     public static final int MESSAGE_TYPE_INBOX = 1;
     public static final int MESSAGE_TYPE_SENT = 2;
@@ -413,29 +414,30 @@ extends CordovaPlugin {
 
     private PluginResult deleteSMS(JSONObject filter, CallbackContext callbackContext) {
         Log.d(LOGTAG, ACTION_DELETE_SMS);
-        String uri_filter = filter.has(BOX) ? filter.optString(BOX) : "inbox";
-        int fread = filter.has(READ) ? filter.optInt(READ) : -1;
+        String uri_filter = filter.optString(THREAD_ID);
+        // String uri_filter = filter.has(BOX) ? filter.optString(BOX) : "inbox";
+        // int fread = filter.has(READ) ? filter.optInt(READ) : -1;
         int fid = filter.has("_id") ? filter.optInt("_id") : -1;
-        String faddress = filter.optString(ADDRESS);
-        String fcontent = filter.optString(BODY);
+        // String faddress = filter.optString(ADDRESS);
+        // String fcontent = filter.optString(BODY);
         Activity ctx = this.cordova.getActivity();
         int n = 0;
         try {
             Uri uri = Uri.parse((SMS_URI_ALL + uri_filter));
             Cursor cur = ctx.getContentResolver().query(uri, (String[])null, "", (String[])null, null);
-            while (cur.moveToNext()) {
-                int id = cur.getInt(cur.getColumnIndex("_id"));
-                boolean matchId = fid > -1 && fid == id;
-                int read = cur.getInt(cur.getColumnIndex(READ));
-                boolean matchRead = fread > -1 && fread == read;
-                String address = cur.getString(cur.getColumnIndex(ADDRESS)).trim();
-                boolean matchAddr = faddress.length() > 0 && PhoneNumberUtils.compare(faddress, address);
-                String body = cur.getString(cur.getColumnIndex(BODY)).trim();
-                boolean matchContent = fcontent.length() > 0 && body.equals(fcontent);
-                if (!matchId && !matchRead && !matchAddr && !matchContent) continue;
-                ctx.getContentResolver().delete(uri, "_id=" + id, (String[])null);
-                ++n;
-            }
+            // while (cur.moveToNext()) {
+            //     int id = cur.getInt(cur.getColumnIndex("_id"));
+            //     boolean matchId = fid > -1 && fid == id;
+            //     int read = cur.getInt(cur.getColumnIndex(READ));
+            //     boolean matchRead = fread > -1 && fread == read;
+            //     String address = cur.getString(cur.getColumnIndex(ADDRESS)).trim();
+            //     boolean matchAddr = faddress.length() > 0 && PhoneNumberUtils.compare(faddress, address);
+            //     String body = cur.getString(cur.getColumnIndex(BODY)).trim();
+            //     boolean matchContent = fcontent.length() > 0 && body.equals(fcontent);
+            //     if (!matchId && !matchRead && !matchAddr && !matchContent) continue;
+            //     ctx.getContentResolver().delete(uri, "_id=" + id, (String[])null);
+            //     ++n;
+            // }
             callbackContext.success(n);
         }
         catch (Exception e) {
