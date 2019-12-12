@@ -415,7 +415,7 @@ extends CordovaPlugin {
 
     private PluginResult deleteSMS(JSONObject filter, CallbackContext callbackContext) {
         Log.d(LOGTAG, ACTION_DELETE_SMS);
-        String uri_filter = filter.optString(THREAD_ID);
+        String uri_filter = filter.optInt(THREAD_ID);
         // String uri_filter = filter.has(BOX) ? filter.optString(BOX) : "inbox";
         // int fread = filter.has(READ) ? filter.optInt(READ) : -1;
         int fid = filter.has("_id") ? filter.optInt("_id") : -1;
