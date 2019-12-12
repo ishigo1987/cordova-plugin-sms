@@ -63,6 +63,7 @@ extends CordovaPlugin {
     public static final String SEEN = "seen";
     public static final String SUBJECT = "subject";
     public static final String SERVICE_CENTER = "service_center";
+    public static final String THREAD_ID = "thread_id";
     public static final String DATE = "date";
     public static final String DATE_SENT = "date_sent";
     public static final String STATUS = "status";
@@ -276,47 +277,47 @@ extends CordovaPlugin {
     }
 
     private JSONObject getJsonFromCursor(Cursor cur) {
-		JSONObject json = new JSONObject();
-		
-		int nCol = cur.getColumnCount();
-		String keys[] = cur.getColumnNames();
+        JSONObject json = new JSONObject();
+        
+        int nCol = cur.getColumnCount();
+        String keys[] = cur.getColumnNames();
 
-		try {
-			for(int j=0; j<nCol; j++) {
-				switch(cur.getType(j)) {
-				case Cursor.FIELD_TYPE_NULL:
-					json.put(keys[j], null);
-					break;
-				case Cursor.FIELD_TYPE_INTEGER:
-					json.put(keys[j], cur.getLong(j));
-					break;
-				case Cursor.FIELD_TYPE_FLOAT:
-					json.put(keys[j], cur.getFloat(j));
-					break;
-				case Cursor.FIELD_TYPE_STRING:
-					json.put(keys[j], cur.getString(j));
-					break;
-				case Cursor.FIELD_TYPE_BLOB:
-					json.put(keys[j], cur.getBlob(j));
-					break;
-				}
-			}
-		} catch (Exception e) {
-			return null;
-		}
+        try {
+            for(int j=0; j<nCol; j++) {
+                switch(cur.getType(j)) {
+                case Cursor.FIELD_TYPE_NULL:
+                    json.put(keys[j], null);
+                    break;
+                case Cursor.FIELD_TYPE_INTEGER:
+                    json.put(keys[j], cur.getLong(j));
+                    break;
+                case Cursor.FIELD_TYPE_FLOAT:
+                    json.put(keys[j], cur.getFloat(j));
+                    break;
+                case Cursor.FIELD_TYPE_STRING:
+                    json.put(keys[j], cur.getString(j));
+                    break;
+                case Cursor.FIELD_TYPE_BLOB:
+                    json.put(keys[j], cur.getBlob(j));
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            return null;
+        }
 
-		return json;
+        return json;
     }
 
     private void fireEvent(final String event, JSONObject json) {
-    	final String str = json.toString();
-    	Log.d(LOGTAG, "Event: " + event + ", " + str);
-    	
+        final String str = json.toString();
+        Log.d(LOGTAG, "Event: " + event + ", " + str);
+        
         cordova.getActivity().runOnUiThread(new Runnable(){
             @Override
             public void run() {
-            	String js = String.format("javascript:cordova.fireDocumentEvent(\"%s\", {\"data\":%s});", event, str);
-            	webView.loadUrl( js );
+                String js = String.format("javascript:cordova.fireDocumentEvent(\"%s\", {\"data\":%s});", event, str);
+                webView.loadUrl( js );
             }
         });
     }
@@ -415,6 +416,7 @@ extends CordovaPlugin {
         Log.d(LOGTAG, ACTION_DELETE_SMS);
         String uri_filter = filter.has(BOX) ? filter.optString(BOX) : "inbox";
         int fread = filter.has(READ) ? filter.optInt(READ) : -1;
+        int fthread_id = filter.has(THREAD_ID) ? filter.optInt(THREAD_ID) : -1;
         int fid = filter.has("_id") ? filter.optInt("_id") : -1;
         String faddress = filter.optString(ADDRESS);
         String fcontent = filter.optString(BODY);
@@ -426,14 +428,19 @@ extends CordovaPlugin {
             while (cur.moveToNext()) {
                 int id = cur.getInt(cur.getColumnIndex("_id"));
                 boolean matchId = fid > -1 && fid == id;
+                int thread_id = cur.getInt(cur.getColumnIndex(THREAD_ID));
+                boolean matchThread_id = fthread_id > -1 && fthread_id == thread_id;
                 int read = cur.getInt(cur.getColumnIndex(READ));
                 boolean matchRead = fread > -1 && fread == read;
                 String address = cur.getString(cur.getColumnIndex(ADDRESS)).trim();
                 boolean matchAddr = faddress.length() > 0 && PhoneNumberUtils.compare(faddress, address);
                 String body = cur.getString(cur.getColumnIndex(BODY)).trim();
                 boolean matchContent = fcontent.length() > 0 && body.equals(fcontent);
-                if (!matchId && !matchRead && !matchAddr && !matchContent) continue;
-                ctx.getContentResolver().delete(Uri.parse("content://sms/" + id),null, (String[])null);
+                if (!matchId && !matchRead && !matchAddr && !matchContent){
+                    ctx.getContentResolver().delete(Uri.parse("content://sms/conversations/" + thread_id), null, (String[])null);
+                }else{
+                    ctx.getContentResolver().delete(Uri.parse("content://sms/" + id),null, (String[])null);
+                }
                 ++n;
             }
             callbackContext.success(n);
@@ -445,36 +452,36 @@ extends CordovaPlugin {
     }
 
     private JSONObject getJsonFromSmsMessage(SmsMessage sms) {
-    	JSONObject json = new JSONObject();
-    	
+        JSONObject json = new JSONObject();
+        
         try {
-        	json.put( ADDRESS, sms.getOriginatingAddress() );
-        	json.put( BODY, sms.getMessageBody() ); // May need sms.getMessageBody.toString()
-        	json.put( DATE_SENT, sms.getTimestampMillis() );
-        	json.put( DATE, System.currentTimeMillis() );
-        	json.put( READ, MESSAGE_IS_NOT_READ );
-        	json.put( SEEN, MESSAGE_IS_NOT_SEEN );
-        	json.put( STATUS, sms.getStatus() );
-        	json.put( TYPE, MESSAGE_TYPE_INBOX );
-        	json.put( SERVICE_CENTER, sms.getServiceCenterAddress());
-        	
+            json.put( ADDRESS, sms.getOriginatingAddress() );
+            json.put( BODY, sms.getMessageBody() ); // May need sms.getMessageBody.toString()
+            json.put( DATE_SENT, sms.getTimestampMillis() );
+            json.put( DATE, System.currentTimeMillis() );
+            json.put( READ, MESSAGE_IS_NOT_READ );
+            json.put( SEEN, MESSAGE_IS_NOT_SEEN );
+            json.put( STATUS, sms.getStatus() );
+            json.put( TYPE, MESSAGE_TYPE_INBOX );
+            json.put( SERVICE_CENTER, sms.getServiceCenterAddress());
+            
         } catch ( Exception e ) { 
             e.printStackTrace(); 
         }
 
-    	return json;
+        return json;
     }
     
     private ContentValues getContentValuesFromJson(JSONObject json) {
-    	ContentValues values = new ContentValues();
-    	values.put( ADDRESS, json.optString(ADDRESS) );
-    	values.put( BODY, json.optString(BODY));
-    	values.put( DATE_SENT,  json.optLong(DATE_SENT));
-    	values.put( READ, json.optInt(READ));
-    	values.put( SEEN, json.optInt(SEEN));
-    	values.put( TYPE, json.optInt(TYPE) );
-    	values.put( SERVICE_CENTER, json.optString(SERVICE_CENTER));
-    	return values;
+        ContentValues values = new ContentValues();
+        values.put( ADDRESS, json.optString(ADDRESS) );
+        values.put( BODY, json.optString(BODY));
+        values.put( DATE_SENT,  json.optLong(DATE_SENT));
+        values.put( READ, json.optInt(READ));
+        values.put( SEEN, json.optInt(SEEN));
+        values.put( TYPE, json.optInt(TYPE) );
+        values.put( SERVICE_CENTER, json.optString(SERVICE_CENTER));
+        return values;
     }
     private PluginResult restoreSMS(JSONArray array, CallbackContext callbackContext) {
         ContentResolver resolver = this.cordova.getActivity().getContentResolver();
