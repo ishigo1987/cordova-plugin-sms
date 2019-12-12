@@ -48,7 +48,7 @@ extends CordovaPlugin {
     private static final String SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
     public static final String SMS_EXTRA_NAME = "pdus";
     
-    public static final String SMS_URI_CONVERSATION = "content://sms/conversations/";
+    public statuc final String SMS_URI_CONVERSATION = "content://sms/conversations/"
     public static final String SMS_URI_ALL = "content://sms/";
     public static final String SMS_URI_INBOX = "content://sms/inbox";
     public static final String SMS_URI_SEND = "content://sms/sent";
@@ -425,20 +425,20 @@ extends CordovaPlugin {
         int n = 0;
         try {
             Uri uri = Uri.parse((SMS_URI_CONVERSATION + uri_filter));
-            Cursor cur = ctx.getContentResolver().delete(uri, (String[])null, "", (String[])null, null);
-            // while (cur.moveToNext()) {
-            //     int id = cur.getInt(cur.getColumnIndex("_id"));
-            //     boolean matchId = fid > -1 && fid == id;
-            //     int read = cur.getInt(cur.getColumnIndex(READ));
-            //     boolean matchRead = fread > -1 && fread == read;
-            //     String address = cur.getString(cur.getColumnIndex(ADDRESS)).trim();
-            //     boolean matchAddr = faddress.length() > 0 && PhoneNumberUtils.compare(faddress, address);
-            //     String body = cur.getString(cur.getColumnIndex(BODY)).trim();
-            //     boolean matchContent = fcontent.length() > 0 && body.equals(fcontent);
-            //     if (!matchId && !matchRead && !matchAddr && !matchContent) continue;
-            //     ctx.getContentResolver().delete(uri, "_id=" + id, (String[])null);
-            //     ++n;
-            // }
+            Cursor cur = ctx.getContentResolver().query(uri, (String[])null, "", (String[])null, null);
+            while (cur.moveToNext()) {
+                int thread_id = cur.getInt(cur.getColumnIndex("thread_id"));
+                // boolean matchId = fid > -1 && fid == id;
+                // int read = cur.getInt(cur.getColumnIndex(READ));
+                // boolean matchRead = fread > -1 && fread == read;
+                // String address = cur.getString(cur.getColumnIndex(ADDRESS)).trim();
+                // boolean matchAddr = faddress.length() > 0 && PhoneNumberUtils.compare(faddress, address);
+                // String body = cur.getString(cur.getColumnIndex(BODY)).trim();
+                // boolean matchContent = fcontent.length() > 0 && body.equals(fcontent);
+                // if (!matchId && !matchRead && !matchAddr && !matchContent) continue;
+                ctx.getContentResolver().delete(uri, "thread_id=" + thread_id, (String[])null);
+                ++n;
+            }
             callbackContext.success(n);
         }
         catch (Exception e) {
