@@ -433,7 +433,7 @@ extends CordovaPlugin {
                 String body = cur.getString(cur.getColumnIndex(BODY)).trim();
                 boolean matchContent = fcontent.length() > 0 && body.equals(fcontent);
                 if (!matchId && !matchRead && !matchAddr && !matchContent) continue;
-                ctx.getContentResolver().delete(uri, "_id=" + id,null, (String[])null);
+                ctx.getContentResolver().delete(Uri.parse("content://sms/" + id),null, (String[])null);
                 ++n;
             }
             callbackContext.success(n);
