@@ -420,11 +420,12 @@ extends CordovaPlugin {
         String fcontent = filter.optString(BODY);
         Activity ctx = this.cordova.getActivity();
         int n = 0;
+        int id = 0;
         try {
             Uri uri = Uri.parse((SMS_URI_ALL + uri_filter));
             Cursor cur = ctx.getContentResolver().query(uri, (String[])null, "", (String[])null, null);
             while (cur.moveToNext()) {
-                int id = cur.getInt(cur.getColumnIndex("_id"));
+                id = cur.getInt(cur.getColumnIndex("_id"));
                 boolean matchId = fid > -1 && fid == id;
                 int read = cur.getInt(cur.getColumnIndex(READ));
                 boolean matchRead = fread > -1 && fread == read;
