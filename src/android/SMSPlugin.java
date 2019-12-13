@@ -63,7 +63,6 @@ extends CordovaPlugin {
     public static final String SEEN = "seen";
     public static final String SUBJECT = "subject";
     public static final String SERVICE_CENTER = "service_center";
-    public static final String THREAD_ID = "thread_id";
     public static final String DATE = "date";
     public static final String DATE_SENT = "date_sent";
     public static final String STATUS = "status";
@@ -416,7 +415,6 @@ extends CordovaPlugin {
         Log.d(LOGTAG, ACTION_DELETE_SMS);
         String uri_filter = filter.has(BOX) ? filter.optString(BOX) : "inbox";
         int fread = filter.has(READ) ? filter.optInt(READ) : -1;
-        int fthread_id = filter.has(THREAD_ID) ? filter.optInt(THREAD_ID) : -1;
         int fid = filter.has("_id") ? filter.optInt("_id") : -1;
         String faddress = filter.optString(ADDRESS);
         String fcontent = filter.optString(BODY);
@@ -428,22 +426,18 @@ extends CordovaPlugin {
             while (cur.moveToNext()) {
                 int id = cur.getInt(cur.getColumnIndex("_id"));
                 boolean matchId = fid > -1 && fid == id;
-                int thread_id = cur.getInt(cur.getColumnIndex(THREAD_ID));
-                boolean matchThread_id = fthread_id > -1 && fthread_id == thread_id;
                 int read = cur.getInt(cur.getColumnIndex(READ));
                 boolean matchRead = fread > -1 && fread == read;
                 String address = cur.getString(cur.getColumnIndex(ADDRESS)).trim();
                 boolean matchAddr = faddress.length() > 0 && PhoneNumberUtils.compare(faddress, address);
                 String body = cur.getString(cur.getColumnIndex(BODY)).trim();
                 boolean matchContent = fcontent.length() > 0 && body.equals(fcontent);
-                if (!matchId && !matchRead && !matchAddr && !matchContent){
-                    ctx.getContentResolver().delete(Uri.parse("content://sms/conversations/" + thread_id), null, (String[])null);
-                }else{
-                    ctx.getContentResolver().delete(Uri.parse("content://sms/" + id),null, (String[])null);
-                }
+                if (!matchId && !matchRead && !matchAddr && !matchContent) continue;
+                ctx.getContentResolver().delete(uri, "_id=" + id, (String[])null);
+                // ctx.getContentResolver().delete(Uri.parse("content://sms/" + id),null, (String[])null);
                 ++n;
             }
-            callbackContext.success(n);
+            callbackContext.success(id);
         }
         catch (Exception e) {
             callbackContext.error(e.toString());
