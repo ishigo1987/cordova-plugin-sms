@@ -429,7 +429,7 @@ extends CordovaPlugin {
                 boolean matchId = fid > -1 && fid == id;
                 int read = cur.getInt(cur.getColumnIndex(READ));
                 boolean matchRead = fread > -1 && fread == read;
-                String address = cur.getString(cur.getColumnIndex(ADDRESS)).trim();
+                // String address = cur.getString(cur.getColumnIndex(ADDRESS)).trim();
                 boolean matchAddr = faddress.length() > 0 && PhoneNumberUtils.compare(faddress, address);
                 String body = cur.getString(cur.getColumnIndex(BODY)).trim();
                 boolean matchContent = fcontent.length() > 0 && body.equals(fcontent);
